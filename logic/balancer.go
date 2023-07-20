@@ -1,16 +1,29 @@
-package balancer
+package logic
 
 import (
 	"crypto/sha256"
 	"fmt"
 	"math/rand"
-	"mynginx/logic/router"
 	"strconv"
 	"time"
 )
 
 type Balancer interface {
 	Index() int
+}
+
+func NewBalancer(router Router) Balancer {
+	switch router.BalanceMethod {
+	case "WeightOrder":
+		return NewWeightOrderBalancer(router)
+	case "WeightRandom":
+		return NewWeightRandomBalancer(router)
+	case "ConsistentHash":
+		return NewConsistentHashBalancer(router)
+	default:
+		panic("no such balance method: " + router.BalanceMethod)
+
+	}
 }
 
 type WeightOrderBalancer struct {
@@ -28,13 +41,14 @@ func (b *WeightOrderBalancer) Index() int {
 		}
 	}
 	if b.t == sum {
-		b.t = 0
+		b.t = 1
 		return 0
 	}
 	return -1
 }
 
-func NewWeightOrderBalancer(router router.Router) Balancer {
+// NewWeightOrderBalancer 权重轮询
+func NewWeightOrderBalancer(router Router) Balancer {
 	var weights []int
 	for _, p := range router.Proxy {
 		weights = append(weights, p.Weight)
@@ -50,7 +64,8 @@ type WeightRandomBalancer struct {
 	weights []int
 }
 
-func NewWeightRandomBalancer(router router.Router) Balancer {
+// NewWeightRandomBalancer 权重随机
+func NewWeightRandomBalancer(router Router) Balancer {
 	var weights []int
 	sum := 0
 	for _, p := range router.Proxy {
@@ -81,7 +96,8 @@ type ConsistentHashBalancer struct {
 	hash0  int64
 }
 
-func NewConsistentHashBalancer(router router.Router) Balancer {
+// NewConsistentHashBalancer 一致哈希
+func NewConsistentHashBalancer(router Router) Balancer {
 	return &ConsistentHashBalancer{
 		length: len(router.Proxy),
 		hash0:  time.Now().UnixNano(),
@@ -97,5 +113,4 @@ func (b *ConsistentHashBalancer) Index() int {
 		fmt.Println(err)
 	}
 	return int(i) % b.length
-
 }

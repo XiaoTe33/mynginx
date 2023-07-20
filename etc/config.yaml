@@ -1,8 +1,15 @@
 http:
-  server:
-    - listen_on:
-      - location:
-        proxy:
-      - location:
-        root:
-        index:
+#servers:
+- listen_on: 80
+  routers:
+  - location: /a
+    proxy:
+    - ip: http://localhost:8081
+      weight: 1
+    - ip: http://localhost:8082
+      weight: 2
+    balancer: WeightRandom
+  - location: /fs
+    balancer: ConsistentHash
+    root: ./test
+    index: index.html

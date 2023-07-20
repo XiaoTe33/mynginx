@@ -11,15 +11,15 @@ type Config struct {
 	Viper *viper.Viper
 }
 
-func ReadConfig() *Config {
-	v := &viper.Viper{}
+func ReadConfig(dir string, filename string) *Config {
+	v := viper.New()
 	v.SetConfigType("yaml")
-	v.AddConfigPath("/etc")
-	v.SetConfigName("config.yaml")
+	v.AddConfigPath(dir)
+	v.SetConfigName(filename)
 	log.Info("reading config")
 	err := v.ReadInConfig()
 	if err != nil {
-		log.Errorf("read config err")
+		log.Errorf("read config err: %v", err)
 		return nil
 	}
 	log.Info("reading config successfully")
