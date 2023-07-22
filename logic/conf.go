@@ -86,8 +86,9 @@ func ParseNginx(config *ttviper.Config) *Nginx {
 			rt.BalanceMethod = fmt.Sprintf("%v", routerC["balancer"])
 			rt.Location = fmt.Sprintf("%v", routerC["location"])
 			rt.Root = fmt.Sprintf("%v", routerC["root"])
-			rt.Index = fmt.Sprintf("%v", routerC["index"])
-
+			if rt.Root == "<nil>" {
+				rt.Root = ""
+			}
 			proxysC, ok5 := routerC["proxy"].([]any)
 			if rt.Root == "" {
 				if !ok5 {

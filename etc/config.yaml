@@ -12,4 +12,3 @@ http:
   - location: /fs
     balancer: ConsistentHash
     root: ./test
-    index: index.html
